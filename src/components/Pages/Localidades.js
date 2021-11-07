@@ -7,19 +7,18 @@ import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { Table } from 'react-bootstrap';
 import { DivTable } from '../Styles/styles'
 
-
-const urlProv = "https://localhost:44357/api/provincia";
-const urlPais = "https://localhost:44357/api/pais";
-
+const urlLocalidad = "https://localhost:44357/api/localidad";
+const urlPartido = "https://localhost:44357/api/partido";
 
 
 
 
-export default class Provincia extends Component {
+
+export default class Localidad extends Component {
 
   state = {
     dataProv: [],
-    dataPais: [],
+    dataPartido: [],
     mensajeGetApiGob: [],
     modalInsertar: false,
     modalEliminar: false,
@@ -28,9 +27,9 @@ export default class Provincia extends Component {
     form: {
       id: '',
       nombre: '',
-      idpais: '',
-      tipoModal: ''
-    
+      idpartido: '',
+      tipoModal: '',
+
     }
   }
 
@@ -44,7 +43,7 @@ export default class Provincia extends Component {
 
 
   peticionGet = () => {
-    axios.get(urlProv, this.configAxios).then(response => {
+    axios.get(urlLocalidad, this.configAxios).then(response => {
       this.setState({ dataProv: response.data });
     }).catch(error => {
       console.log(error.message);
@@ -52,17 +51,17 @@ export default class Provincia extends Component {
   }
 
   peticionGetApiGob = () => {
-    axios.get(urlProv+"/getdatagobtodb", this.configAxios).then(response => {
-      this.setState({ mensajeGetApiGob: response.data});
+    axios.get(urlLocalidad + "/getdatagobtodb", this.configAxios).then(response => {
+      this.setState({ mensajeGetApiGob: response.data });
       this.peticionGet();
     }).catch(error => {
       console.log(error.message);
     })
   }
 
-  peticionGetPais = () => {
-    axios.get(urlPais, this.configAxios).then(response => {
-      this.setState({ dataPais: response.data });
+  peticionGetPartido = () => {
+    axios.get(urlPartido, this.configAxios).then(response => {
+      this.setState({ dataPartido: response.data });
     }).catch(error => {
       console.log(error.message);
     })
@@ -72,7 +71,7 @@ export default class Provincia extends Component {
 
   peticionPost = async () => {
     delete this.state.form.id;
-    await axios.post(urlProv, this.state.form, this.configAxios).then(response => {
+    await axios.post(urlLocalidad, this.state.form, this.configAxios).then(response => {
       this.modalInsertar();
       this.peticionGet();
     }).catch(error => {
@@ -81,14 +80,14 @@ export default class Provincia extends Component {
   }
 
   peticionPut = () => {
-    axios.put(urlProv, this.state.form, this.configAxios).then(response => {
+    axios.put(urlLocalidad, this.state.form, this.configAxios).then(response => {
       this.modalInsertar();
       this.peticionGet();
     })
   }
 
   peticionDelete = () => {
-    axios.delete(urlProv + "/" + this.state.form.id, this.configAxios).then(response => {
+    axios.delete(urlLocalidad + "/" + this.state.form.id, this.configAxios).then(response => {
       this.setState({ modalEliminar: false });
       this.peticionGet();
     })
@@ -98,13 +97,13 @@ export default class Provincia extends Component {
     this.setState({ modalInsertar: !this.state.modalInsertar, habilitarbtnInsertar: !this.state.habilitarbtnInsertar });
   }
 
-  seleccionarProvincia = (provincia) => {
+  seleccionarLocalidad = (localidad) => {
     this.setState({
       tipoModal: 'actualizar',
       form: {
-        id: provincia.id,
-        nombre: provincia.nombre,
-        idpais: provincia.idpais
+        id: localidad.id,
+        nombre: localidad.nombre,
+        idpartido: localidad.idpartido
       }
 
     })
@@ -120,9 +119,9 @@ export default class Provincia extends Component {
       }
     });
     console.log(this.state.form);
-    if (this.state.form.idpais > 0) {
-      var aux= this.state.form.nombre
-      if (this.state.form.nombre!=null &&  aux.length>0) {
+    if (this.state.form.idpartido > 0) {
+      var aux = this.state.form.nombre
+      if (this.state.form.nombre != null && aux.length > 0) {
         this.setState({ habilitarbtnInsertar: true });
       }
     } else {
@@ -132,7 +131,7 @@ export default class Provincia extends Component {
 
   componentDidMount() {
     this.peticionGet();
-    this.peticionGetPais();
+    this.peticionGetPartido();
 
   }
 
@@ -142,44 +141,44 @@ export default class Provincia extends Component {
     return (
       <div className="App">
         <br /><br /><br />
-        <button className="btn btn-success" onClick={() => { this.setState({ modalGetApiGob: true}); this.peticionGetApiGob() }}>Get API Gob</button>
+        <button className="btn btn-success" onClick={() => { this.setState({ modalGetApiGob: true }); this.peticionGetApiGob() }}>Get API Gob</button>
         {"        "}
-        <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Provincia</button>
+        <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Localidad</button>
         <br /><br />
         <DivTable>
           <Table striped bordered hover variant="dark">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>ID de Pais</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.dataProv.map(provincia => {
-              return (
-                <tr>
-                  <td>{provincia.id}</td>
-                  <td>{provincia.nombre}</td>
-                  {this.state.dataPais.map(pais => {
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>ID de Partido</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.dataProv.map(localidad => {
+                return (
+                  <tr>
+                    <td>{localidad.id}</td>
+                    <td>{localidad.nombre}</td>
+                    {this.state.dataPartido.map(partido => {
 
-                    if (pais.id === provincia.idpais) {
-                      return (
-                        <td>{pais.nombre}</td>
-                      )
-                    }
+                      if (partido.id === localidad.idpartido) {
+                        return (
+                          <td>{partido.nombre}</td>
+                        )
+                      }
 
-                  })}
-                  <td>
-                    <button className="btn btn-primary" onClick={() => { this.seleccionarProvincia(provincia); this.modalInsertar() }}><FontAwesomeIcon icon={faEdit} /></button>
-                    {"   "}
-                    <button className="btn btn-danger" onClick={() => { this.seleccionarProvincia(provincia); this.setState({ modalEliminar: true }) }}><FontAwesomeIcon icon={faTrashAlt} /></button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
+                    })}
+                    <td>
+                      <button className="btn btn-primary" onClick={() => { this.seleccionarLocalidad(localidad); this.modalInsertar() }}><FontAwesomeIcon icon={faEdit} /></button>
+                      {"   "}
+                      <button className="btn btn-danger" onClick={() => { this.seleccionarLocalidad(localidad); this.setState({ modalEliminar: true }) }}><FontAwesomeIcon icon={faTrashAlt} /></button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
           </Table>
         </DivTable>
 
@@ -198,15 +197,15 @@ export default class Provincia extends Component {
               <input className="form-control" type="text" name="nombre" id="nombre" onChange={this.handleChange} value={form ? form.nombre : ''} />
               <br />
 
-              <select defaultValue={this.state.form ? this.state.form.idpais : ''} name="idpais" id="idpais" className="form-control" onChange={this.handleChange}>
+              <select defaultValue={this.state.form ? this.state.form.idpartido : ''} name="idpartido" id="idpartido" className="form-control" onChange={this.handleChange}>
 
-                {this.state.tipoModal == 'insertar' ? <option value="0">Seleccione un pais </option> : ''}
-                {this.state.dataPais.map(pais => {
+                {this.state.tipoModal == 'insertar' ? <option value="0">Seleccione un partido </option> : ''}
+                {this.state.dataPartido.map(partido => {
 
 
                   return (
 
-                    <option value={pais.id}>{pais.nombre} </option>
+                    <option value={partido.id}>{partido.nombre} </option>
 
                   )
 
@@ -236,20 +235,20 @@ export default class Provincia extends Component {
 
         <Modal isOpen={this.state.modalGetApiGob}>
           <ModalBody>
-           <h1>{this.state.mensajeGetApiGob}</h1>
+            <h1>{this.state.mensajeGetApiGob}</h1>
           </ModalBody>
           <ModalFooter>
             <div >
-            <button className="btn btn-danger" onClick={() => this.setState({ modalGetApiGob: false})}>Aceptar</button>
-          </div>
-            
+              <button className="btn btn-danger" onClick={() => this.setState({ modalGetApiGob: false })}>Aceptar</button>
+            </div>
+
           </ModalFooter>
         </Modal>
 
-        
+
         <Modal isOpen={this.state.modalEliminar}>
           <ModalBody>
-            Estás seguro que deseas eliminar la provincia {form && form.nombre}
+            Estás seguro que deseas eliminar la localidad {form && form.nombre}
           </ModalBody>
           <ModalFooter>
             <button className="btn btn-danger" onClick={() => this.peticionDelete()}>Sí</button>

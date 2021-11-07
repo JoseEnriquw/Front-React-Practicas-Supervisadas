@@ -7,19 +7,18 @@ import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { Table } from 'react-bootstrap';
 import { DivTable } from '../Styles/styles'
 
-
-const urlProv = "https://localhost:44357/api/provincia";
-const urlPais = "https://localhost:44357/api/pais";
-
+const urlPartido = "https://localhost:44357/api/partido";
+const urlPartidoincia = "https://localhost:44357/api/provincia";
 
 
 
 
-export default class Provincia extends Component {
+
+export default class Partido extends Component {
 
   state = {
-    dataProv: [],
-    dataPais: [],
+    dataPartido: [],
+    dataProvincia: [],
     mensajeGetApiGob: [],
     modalInsertar: false,
     modalEliminar: false,
@@ -28,9 +27,9 @@ export default class Provincia extends Component {
     form: {
       id: '',
       nombre: '',
-      idpais: '',
-      tipoModal: ''
-    
+      idprovincia: '',
+      tipoModal: '',
+
     }
   }
 
@@ -44,25 +43,25 @@ export default class Provincia extends Component {
 
 
   peticionGet = () => {
-    axios.get(urlProv, this.configAxios).then(response => {
-      this.setState({ dataProv: response.data });
+    axios.get(urlPartido, this.configAxios).then(response => {
+      this.setState({ dataPartido: response.data });
     }).catch(error => {
       console.log(error.message);
     })
   }
 
   peticionGetApiGob = () => {
-    axios.get(urlProv+"/getdatagobtodb", this.configAxios).then(response => {
-      this.setState({ mensajeGetApiGob: response.data});
+    axios.get(urlPartido + "/getdatagobtodb", this.configAxios).then(response => {
+      this.setState({ mensajeGetApiGob: response.data });
       this.peticionGet();
     }).catch(error => {
       console.log(error.message);
     })
   }
 
-  peticionGetPais = () => {
-    axios.get(urlPais, this.configAxios).then(response => {
-      this.setState({ dataPais: response.data });
+  peticionGetProvincia = () => {
+    axios.get(urlPartidoincia, this.configAxios).then(response => {
+      this.setState({ dataProvincia: response.data });
     }).catch(error => {
       console.log(error.message);
     })
@@ -72,7 +71,7 @@ export default class Provincia extends Component {
 
   peticionPost = async () => {
     delete this.state.form.id;
-    await axios.post(urlProv, this.state.form, this.configAxios).then(response => {
+    await axios.post(urlPartido, this.state.form, this.configAxios).then(response => {
       this.modalInsertar();
       this.peticionGet();
     }).catch(error => {
@@ -81,14 +80,14 @@ export default class Provincia extends Component {
   }
 
   peticionPut = () => {
-    axios.put(urlProv, this.state.form, this.configAxios).then(response => {
+    axios.put(urlPartido, this.state.form, this.configAxios).then(response => {
       this.modalInsertar();
       this.peticionGet();
     })
   }
 
   peticionDelete = () => {
-    axios.delete(urlProv + "/" + this.state.form.id, this.configAxios).then(response => {
+    axios.delete(urlPartido + "/" + this.state.form.id, this.configAxios).then(response => {
       this.setState({ modalEliminar: false });
       this.peticionGet();
     })
@@ -98,13 +97,13 @@ export default class Provincia extends Component {
     this.setState({ modalInsertar: !this.state.modalInsertar, habilitarbtnInsertar: !this.state.habilitarbtnInsertar });
   }
 
-  seleccionarProvincia = (provincia) => {
+  seleccionarPartido = (partido) => {
     this.setState({
       tipoModal: 'actualizar',
       form: {
-        id: provincia.id,
-        nombre: provincia.nombre,
-        idpais: provincia.idpais
+        id: partido.id,
+        nombre: partido.nombre,
+        idprovincia: partido.idprovincia
       }
 
     })
@@ -120,9 +119,9 @@ export default class Provincia extends Component {
       }
     });
     console.log(this.state.form);
-    if (this.state.form.idpais > 0) {
-      var aux= this.state.form.nombre
-      if (this.state.form.nombre!=null &&  aux.length>0) {
+    if (this.state.form.idprovincia > 0) {
+      var aux = this.state.form.nombre
+      if (this.state.form.nombre != null && aux.length > 0) {
         this.setState({ habilitarbtnInsertar: true });
       }
     } else {
@@ -132,7 +131,7 @@ export default class Provincia extends Component {
 
   componentDidMount() {
     this.peticionGet();
-    this.peticionGetPais();
+    this.peticionGetProvincia();
 
   }
 
@@ -142,44 +141,44 @@ export default class Provincia extends Component {
     return (
       <div className="App">
         <br /><br /><br />
-        <button className="btn btn-success" onClick={() => { this.setState({ modalGetApiGob: true}); this.peticionGetApiGob() }}>Get API Gob</button>
+        <button className="btn btn-success" onClick={() => { this.setState({ modalGetApiGob: true }); this.peticionGetApiGob() }}>Get API Gob</button>
         {"        "}
-        <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Provincia</button>
+        <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Partido</button>
         <br /><br />
         <DivTable>
           <Table striped bordered hover variant="dark">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>ID de Pais</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.dataProv.map(provincia => {
-              return (
-                <tr>
-                  <td>{provincia.id}</td>
-                  <td>{provincia.nombre}</td>
-                  {this.state.dataPais.map(pais => {
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>ID de Provincia</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.dataPartido.map(partido => {
+                return (
+                  <tr>
+                    <td>{partido.id}</td>
+                    <td>{partido.nombre}</td>
+                    {this.state.dataProvincia.map(provincia => {
 
-                    if (pais.id === provincia.idpais) {
-                      return (
-                        <td>{pais.nombre}</td>
-                      )
-                    }
+                      if (provincia.id === partido.idprovincia) {
+                        return (
+                          <td>{provincia.nombre}</td>
+                        )
+                      }
 
-                  })}
-                  <td>
-                    <button className="btn btn-primary" onClick={() => { this.seleccionarProvincia(provincia); this.modalInsertar() }}><FontAwesomeIcon icon={faEdit} /></button>
-                    {"   "}
-                    <button className="btn btn-danger" onClick={() => { this.seleccionarProvincia(provincia); this.setState({ modalEliminar: true }) }}><FontAwesomeIcon icon={faTrashAlt} /></button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
+                    })}
+                    <td>
+                      <button className="btn btn-primary" onClick={() => { this.seleccionarPartido(partido); this.modalInsertar() }}><FontAwesomeIcon icon={faEdit} /></button>
+                      {"   "}
+                      <button className="btn btn-danger" onClick={() => { this.seleccionarPartido(partido); this.setState({ modalEliminar: true }) }}><FontAwesomeIcon icon={faTrashAlt} /></button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
           </Table>
         </DivTable>
 
@@ -192,21 +191,21 @@ export default class Provincia extends Component {
           <ModalBody>
             <div className="form-group">
               <label htmlFor="id">ID</label>
-              <input className="form-control" type="text" name="id" id="id" readOnly onChange={this.handleChange} value={form ? form.id : this.state.dataProv[this.state.dataProv.length - 1].id + 1} />
+              <input className="form-control" type="text" name="id" id="id" readOnly onChange={this.handleChange} value={form ? form.id : this.state.dataPartido[this.state.dataPartido.length - 1].id + 1} />
               <br />
               <label htmlFor="nombre">Nombre</label>
               <input className="form-control" type="text" name="nombre" id="nombre" onChange={this.handleChange} value={form ? form.nombre : ''} />
               <br />
 
-              <select defaultValue={this.state.form ? this.state.form.idpais : ''} name="idpais" id="idpais" className="form-control" onChange={this.handleChange}>
+              <select defaultValue={this.state.form ? this.state.form.idprovincia : ''} name="idprovincia" id="idprovincia" className="form-control" onChange={this.handleChange}>
 
-                {this.state.tipoModal == 'insertar' ? <option value="0">Seleccione un pais </option> : ''}
-                {this.state.dataPais.map(pais => {
+                {this.state.tipoModal == 'insertar' ? <option value="0">Seleccione un provincia </option> : ''}
+                {this.state.dataProvincia.map(provincia => {
 
 
                   return (
 
-                    <option value={pais.id}>{pais.nombre} </option>
+                    <option value={provincia.id}>{provincia.nombre} </option>
 
                   )
 
@@ -236,20 +235,20 @@ export default class Provincia extends Component {
 
         <Modal isOpen={this.state.modalGetApiGob}>
           <ModalBody>
-           <h1>{this.state.mensajeGetApiGob}</h1>
+            <h1>{this.state.mensajeGetApiGob}</h1>
           </ModalBody>
           <ModalFooter>
             <div >
-            <button className="btn btn-danger" onClick={() => this.setState({ modalGetApiGob: false})}>Aceptar</button>
-          </div>
-            
+              <button className="btn btn-danger" onClick={() => this.setState({ modalGetApiGob: false })}>Aceptar</button>
+            </div>
+
           </ModalFooter>
         </Modal>
 
-        
+
         <Modal isOpen={this.state.modalEliminar}>
           <ModalBody>
-            Estás seguro que deseas eliminar la provincia {form && form.nombre}
+            Estás seguro que deseas eliminar la partido {form && form.nombre}
           </ModalBody>
           <ModalFooter>
             <button className="btn btn-danger" onClick={() => this.peticionDelete()}>Sí</button>
