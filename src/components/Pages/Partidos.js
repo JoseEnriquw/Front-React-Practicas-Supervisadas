@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faSearch, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
-import { Table } from 'react-bootstrap';
-import { DivTable } from '../Styles/styles'
+import { Table,Form,FormControl,Button } from 'react-bootstrap';
+import { DivTable, DivSideBar, DivCenter, DivBarraBusqueda} from '../Styles/styles'
 
 const urlPartido = "https://localhost:44357/api/partido";
-const urlPartidoincia = "https://localhost:44357/api/provincia";
+const urlProvincia = "https://localhost:44357/api/provincia/get";
 
 
 
@@ -24,14 +24,25 @@ export default class Partido extends Component {
     modalEliminar: false,
     modalGetApiGob: false,
     habilitarbtnInsertar: true,
+    filtersProv: {
+      paisNombre: ''
+    },
+    filters: {
+      nombrePartido: '',
+      nombreProvincia: ''
+    },
     form: {
       id: '',
       nombre: '',
       idprovincia: '',
-      tipoModal: '',
+      tipoModal: ''
 
     }
   }
+
+
+
+  ErrorMsj = "NO HUBO INGRESO DE DATOS, DEBIDO A QUE YA ESTAN EN LA BASE DE DATOS O NO HAY DATOS PARA MIGRAR"
 
   configAxios = {
     headers: {
@@ -43,7 +54,10 @@ export default class Partido extends Component {
 
 
   peticionGet = () => {
-    axios.get(urlPartido, this.configAxios).then(response => {
+
+    var pais = JSON.stringify(this.state.filters)
+
+    axios.post(urlPartido + "/get", pais, this.configAxios).then(response => {
       this.setState({ dataPartido: response.data });
     }).catch(error => {
       console.log(error.message);
@@ -60,7 +74,8 @@ export default class Partido extends Component {
   }
 
   peticionGetProvincia = () => {
-    axios.get(urlPartidoincia, this.configAxios).then(response => {
+    var filtro=JSON.stringify(this.state.filtersProv)
+    axios.post(urlProvincia,filtro, this.configAxios).then(response => {
       this.setState({ dataProvincia: response.data });
     }).catch(error => {
       console.log(error.message);
@@ -109,6 +124,27 @@ export default class Partido extends Component {
     })
   }
 
+  handleSubmitPais = async e => {
+    await this.setState({
+      filters: {
+        ...this.state.filters,
+        [e.target.name]: e.target.value
+      }
+    })
+    console.log(this.state.filters);
+    this.peticionGet();
+  }
+
+  handleChangeBarraBuscar= async e => {
+    await this.setState({
+      filters: {
+        ...this.state.filters,
+        [e.target.name]: e.target.value
+      }
+    })
+    console.log(this.state.filters);
+    
+  }
 
   handleChange = async e => {
     e.persist();
@@ -139,123 +175,155 @@ export default class Partido extends Component {
   render() {
     const { form } = this.state;
     return (
-      <div className="App">
-        <br /><br /><br />
-        <button className="btn btn-success" onClick={() => { this.setState({ modalGetApiGob: true }); this.peticionGetApiGob() }}>Get API Gob</button>
-        {"        "}
-        <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Partido</button>
-        <br /><br />
-        <DivTable>
-          <Table striped bordered hover variant="dark">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>ID de Provincia</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.dataPartido.map(partido => {
-                return (
-                  <tr>
-                    <td>{partido.id}</td>
-                    <td>{partido.nombre}</td>
-                    {this.state.dataProvincia.map(provincia => {
-
-                      if (provincia.id === partido.idprovincia) {
-                        return (
-                          <td>{provincia.nombre}</td>
-                        )
-                      }
-
-                    })}
-                    <td>
-                      <button className="btn btn-primary" onClick={() => { this.seleccionarPartido(partido); this.modalInsertar() }}><FontAwesomeIcon icon={faEdit} /></button>
-                      {"   "}
-                      <button className="btn btn-danger" onClick={() => { this.seleccionarPartido(partido); this.setState({ modalEliminar: true }) }}><FontAwesomeIcon icon={faTrashAlt} /></button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </Table>
-        </DivTable>
 
 
+      <DivCenter>
+        <DivSideBar>
+          <select name="nombreProvincia" id="nombreProvincia" title="Pais" onChange={this.handleSubmitPais}>
+            <option value="" >Todas las Provincias</option>
+            {this.state.dataProvincia.map(provincia => {
+              return (
+                <option value={provincia.nombre} >{provincia.nombre}</option>
+              );
+            })}
+          </select>
+        </DivSideBar>
 
-        <Modal isOpen={this.state.modalInsertar}>
-          <ModalHeader style={{ display: 'block' }}>
-            <span style={{ float: 'right' }} onClick={() => this.modalInsertar()}>x</span>
-          </ModalHeader>
-          <ModalBody>
-            <div className="form-group">
-              <label htmlFor="id">ID</label>
-              <input className="form-control" type="text" name="id" id="id" readOnly onChange={this.handleChange} value={form ? form.id : this.state.dataPartido[this.state.dataPartido.length - 1].id + 1} />
-              <br />
-              <label htmlFor="nombre">Nombre</label>
-              <input className="form-control" type="text" name="nombre" id="nombre" onChange={this.handleChange} value={form ? form.nombre : ''} />
-              <br />
-
-              <select defaultValue={this.state.form ? this.state.form.idprovincia : ''} name="idprovincia" id="idprovincia" className="form-control" onChange={this.handleChange}>
-
-                {this.state.tipoModal == 'insertar' ? <option value="0">Seleccione un provincia </option> : ''}
-                {this.state.dataProvincia.map(provincia => {
-
-
+        <DivCenter>
+          <DivTable>
+          <br />
+          <button className="btn btn-success" onClick={() => { this.setState({ modalGetApiGob: true }); this.peticionGetApiGob() }}>Obtener datos de API Gobierno</button>
+          {"        "}
+          <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Partido</button>
+          <DivBarraBusqueda>
+          <Form className="d-flex">
+        <FormControl
+          type="search"
+          name="nombrePartido"
+          placeholder="Search"
+          className="me-2"
+          aria-label="Search"
+         
+          onChange={ this.handleChangeBarraBuscar}
+        />
+        <Button onClick={this.peticionGet} variant="outline-success"><FontAwesomeIcon icon={faSearch} /></Button>
+        </Form>
+        </DivBarraBusqueda>
+          <br /><br />
+            <Table striped bordered hover variant="dark">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>ID de Provincia</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.dataPartido.map(partido => {
                   return (
+                    <tr>
+                      <td>{partido.id}</td>
+                      <td>{partido.nombre}</td>
+                      {this.state.dataProvincia.map(provincia => {
 
-                    <option value={provincia.id}>{provincia.nombre} </option>
+                        if (provincia.id === partido.idprovincia) {
+                          return (
+                            <td>{provincia.nombre}</td>
+                          )
+                        }
 
+                      })}
+                      <td>
+                        <button className="btn btn-primary" onClick={() => { this.seleccionarPartido(partido); this.modalInsertar() }}><FontAwesomeIcon icon={faEdit} /></button>
+                        {"   "}
+                        <button className="btn btn-danger" onClick={() => { this.seleccionarPartido(partido); this.setState({ modalEliminar: true }) }}><FontAwesomeIcon icon={faTrashAlt} /></button>
+                      </td>
+                    </tr>
                   )
-
-
                 })}
+              </tbody>
+            </Table>
+          </DivTable>
 
 
 
-              </select>
+          <Modal isOpen={this.state.modalInsertar}>
+            <ModalHeader style={{ display: 'block' }}>
+              <span style={{ float: 'right' }} onClick={() => this.modalInsertar()}>x</span>
+            </ModalHeader>
+            <ModalBody>
+              <div className="form-group">
+                <label htmlFor="id">ID</label>
+                <input className="form-control" type="text" name="id" id="id" readOnly onChange={this.handleChange} value={form ? form.id : this.state.dataPartido[this.state.dataPartido.length - 1].id + 1} />
+                <br />
+                <label htmlFor="nombre">Nombre</label>
+                <input className="form-control" type="text" name="nombre" id="nombre" onChange={this.handleChange} value={form ? form.nombre : ''} />
+                <br />
 
-            </div>
-          </ModalBody>
+                <select defaultValue={this.state.form ? this.state.form.idprovincia : ''} name="idprovincia" id="idprovincia" className="form-control" onChange={this.handleChange}>
 
-          <ModalFooter>
-
-            {this.state.tipoModal == 'insertar' ?
-              <button className="btn btn-success" disabled={!this.state.habilitarbtnInsertar} onClick={() => this.peticionPost()}>
-                Insertar
-              </button> : <button className="btn btn-primary" disabled={!this.state.habilitarbtnInsertar} onClick={() => this.peticionPut()}>
-                Actualizar
-              </button>
-            }
-            <button className="btn btn-danger" onClick={() => this.modalInsertar()}>Cancelar</button>
-          </ModalFooter>
-        </Modal>
-
-
-        <Modal isOpen={this.state.modalGetApiGob}>
-          <ModalBody>
-            <h1>{this.state.mensajeGetApiGob}</h1>
-          </ModalBody>
-          <ModalFooter>
-            <div >
-              <button className="btn btn-danger" onClick={() => this.setState({ modalGetApiGob: false })}>Aceptar</button>
-            </div>
-
-          </ModalFooter>
-        </Modal>
+                  {this.state.tipoModal == 'insertar' ? <option value="0">Seleccione un provincia </option> : ''}
+                  {this.state.dataProvincia.map(provincia => {
 
 
-        <Modal isOpen={this.state.modalEliminar}>
-          <ModalBody>
-            Estás seguro que deseas eliminar la partido {form && form.nombre}
-          </ModalBody>
-          <ModalFooter>
-            <button className="btn btn-danger" onClick={() => this.peticionDelete()}>Sí</button>
-            <button className="btn btn-secundary" onClick={() => this.setState({ modalEliminar: false })}>No</button>
-          </ModalFooter>
-        </Modal>
-      </div>
+                    return (
+
+                      <option value={provincia.id}>{provincia.nombre} </option>
+
+                    )
+
+
+                  })}
+
+
+
+                </select>
+
+              </div>
+            </ModalBody>
+
+            <ModalFooter>
+
+              {this.state.tipoModal == 'insertar' ?
+                <button className="btn btn-success" disabled={!this.state.habilitarbtnInsertar} onClick={() => this.peticionPost()}>
+                  Insertar
+                </button> : <button className="btn btn-primary" disabled={!this.state.habilitarbtnInsertar} onClick={() => this.peticionPut()}>
+                  Actualizar
+                </button>
+              }
+              <button className="btn btn-danger" onClick={() => this.modalInsertar()}>Cancelar</button>
+            </ModalFooter>
+          </Modal>
+
+
+          <Modal isOpen={this.state.modalGetApiGob}>
+            <ModalBody>
+              <h1>{this.state.mensajeGetApiGob}</h1>
+            </ModalBody>
+            <ModalFooter>
+              <div >
+              <button className="btn btn-danger" onClick={() => {
+                  this.setState({ modalGetApiGob: false });
+                  this.state.mensajeGetApiGob === this.ErrorMsj ? this.setState({ modalGetApiGob: false }) : window.location.replace('');
+                }}>Aceptar</button>
+              </div>
+
+            </ModalFooter>
+          </Modal>
+
+
+          <Modal isOpen={this.state.modalEliminar}>
+            <ModalBody>
+              Estás seguro que deseas eliminar la partido {form && form.nombre}
+            </ModalBody>
+            <ModalFooter>
+              <button className="btn btn-danger" onClick={() => this.peticionDelete()}>Sí</button>
+              <button className="btn btn-secundary" onClick={() => this.setState({ modalEliminar: false })}>No</button>
+            </ModalFooter>
+          </Modal>
+        </DivCenter>
+      </DivCenter>
 
 
 

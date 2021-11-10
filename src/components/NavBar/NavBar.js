@@ -33,7 +33,7 @@ function NavBa() {
           </Navbar>
         </div>
 
-        <div>
+        
           <Switch>
           <Route path="/" exact component={Home} />
           <Route path="/Home">
@@ -53,7 +53,7 @@ function NavBa() {
             </Route>
             
           </Switch>
-        </div>
+        
 
 
       </Router>
